@@ -9,6 +9,7 @@ const postcss = require('gulp-postcss')
 const cssmin = require('gulp-cssmin')
 const autoprefixer = require('autoprefixer')
 const cssnano = require('cssnano')
+const nested = require('postcss-nested')
 const sugarss = require('sugarss')
 const maps = require('gulp-sourcemaps')
 const del = require('del')
@@ -72,15 +73,18 @@ gulp.task('customScripts', function () {
 */
 
 gulp.task('compileSass', function () {
-  let plugins = [autoprefixer({ browsers: ['last 1 version'] })]
-  return gulp
-    .src([PATH.ASSETS.css + '**/*.scss'])
-    .pipe(maps.init())
-    .pipe(sass().on('error', sass.logError))
-    .pipe(postcss(plugins, { parser: sugarss }))
-    .pipe(maps.write('.'))
-    .pipe(gulp.dest(PATH_DEST.ASSETS.css))
-    .pipe(browserSync.stream({ match: '**/*.css' }))
+  // let plugins = [nested]
+  return (
+    gulp
+      .src([PATH.ASSETS.css + '**/*.scss'])
+      .pipe(maps.init())
+      .pipe(sass().on('error', sass.logError))
+      // 오류 node-sass 설치해봐야됨
+      // .pipe(postcss(plugins, { parser: sugarss }))
+      .pipe(maps.write('.'))
+      .pipe(gulp.dest(PATH_DEST.ASSETS.css))
+      .pipe(browserSync.stream({ match: '**/*.css' }))
+  )
 })
 
 /* 
