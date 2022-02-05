@@ -1,0 +1,82 @@
+@use 'sass:map';
+@use 'sass:meta';
+
+/* ------------------- Breakpoints ------------------- */
+@mixin screen-up($breakpoint) {
+  @if map-has-key($breakpoints, $breakpoint) {
+    @media #{inspect(map-get($breakpoints, $breakpoint))} {
+      @content;
+    }
+  } @else {
+    @warn "Unfortunately, no value could be retrieved from `#{$breakpoint}`. "
+        + "Available breakpoints are: #{map-keys($breakpoints)}.";
+  }
+}
+
+// max-width (container-width)
+@mixin screen-down($widths) {
+  @if map-has-key($max-widths, $widths) {
+    @media #{inspect(map-get($max-widths, $widths))} {
+      @content;
+    }
+  } @else {
+    @warn "Unfortunately, no value could be retrieved from `#{$widths}`. "
+        + "Available breakpoints are: #{map-keys($max-widths)}.";
+  }
+}
+
+/* ------------------- color invert (yiq) ------------------- */
+// Theme Color Invert
+@mixin color-invert($background) {
+  $r: red($background);
+  $g: green($background);
+  $b: blue($background);
+
+  $yiq: (($r * 299) + ($g * 587) + ($b * 114)) * 0.001;
+
+  @if ($yiq >= 128) {
+    color: black;
+  } @else {
+    color: white;
+  }
+}
+
+/* ------------------- input placeholder ------------------- */
+@mixin input-placeholder {
+  &.placeholder {
+    @content;
+  }
+  &:-moz-placeholder {
+    @content;
+  }
+  &::-moz-placeholder {
+    @content;
+  }
+  &:-ms-input-placeholder {
+    @content;
+  }
+  &::-webkit-input-placeholder {
+    @content;
+  }
+}
+
+/* ------------------- ::after ------------------- */
+@mixin pseudo($width: 100%, $height: 100%, $display: inline-block, $pos: absolute, $content: '') {
+  content: $content;
+  display: $display;
+  position: $pos;
+  @include box($width, $height);
+}
+
+/* ------------------- text-ellipsis ------------------- */
+@mixin text-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ------------------- margin-auto ------------------- */
+@mixin margin-auto {
+  margin-left: auto;
+  margin-right: auto;
+}

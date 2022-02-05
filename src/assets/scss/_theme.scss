@@ -1,0 +1,65 @@
+$theme: (
+  'light': (
+    'colors': $color-palette,
+    'shades': (
+      'shade-0': $gray-100,
+      'shade-1': $gray-200,
+      'shade-2': rgba(black, 0.2),
+      'shade-3': $gray-400,
+      'shade-4': $gray-500,
+      'shade-5': $gray-700,
+      'shade-6': $gray-900,
+    ),
+  ),
+  'dark': (
+    'colors': $dark-palette,
+    'shades': (
+      'shade-0': $gray-900,
+      'shade-1': $gray-800,
+      'shade-2': rgba(white, 0.2),
+      'shade-3': $gray-600,
+      'shade-4': $gray-500,
+      'shade-5': $gray-300,
+      'shade-6': $gray-100,
+    ),
+  ),
+);
+
+$transition-bg: all 0.1s cubic-bezier(0.185, 0.475, 0.895, 0.39);
+
+@each $theme-name, $theme-vars in $theme {
+  $shades: map-get($theme-vars, 'shades');
+  $colors: map-get($theme-vars, 'colors');
+
+  $theme-mode: (
+    'bg': map-get($shades, 'shade-0'),
+    'border': map-get($shades, 'shade-2'),
+    'border-focus': map-get($shades, 'shade-3'),
+    'text': map-get($shades, 'shade-5'),
+    'heading': map-get($shades, 'shade-6'),
+  );
+
+  [data-theme='#{$theme-name}'] {
+    @each $name, $color in $shades {
+      --#{$name}: #{$color};
+    }
+    @each $name, $color in $colors {
+      --#{$name}: #{$color};
+      --#{$name}-dark: #{darken($color, 10%)};
+      --#{$name}-light: #{lighten($color, 10%)};
+    }
+
+    @each $name, $color in $theme-mode {
+      --theme-#{$name}: #{$color};
+    }
+  }
+}
+// @media (prefers-color-scheme: #{$theme-name}) {
+// }
+
+body {
+  background-color: var(--theme-bg);
+  border-color: var(--theme-border);
+  color: var(--theme-text);
+  transition: $transition-bg;
+}
