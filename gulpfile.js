@@ -79,8 +79,18 @@ function Sass() {
     .pipe(sass({ fiber: Fiber }).on('error', sass.logError))
     .pipe(postcss(plugins))
     .pipe(gulp.dest(PATH_DEST.ASSETS.css))
+    .pipe(maps.write('./map'))
+    .pipe(browserSync.stream())
+}
+
+/*  CSS Minify  */
+function CssMin() {
+  return gulp
+    .src(PATH_DEST.ASSETS.css + '*.css')
+    .pipe(maps.init())
     .pipe(cssnano())
     .pipe(rename({ suffix: '.min' }))
+    .pipe(gulp.dest(PATH_DEST.ASSETS.css))
     .pipe(maps.write('./map'))
     .pipe(browserSync.stream())
 }
@@ -136,7 +146,6 @@ function watch() {
       baseDir: PATH_DEST.root,
     },
   })
-  gulp.watch(PATH.ASSETS.img, ImgMin)
   gulp.watch(PATH.ASSETS.css + '**/*.scss', Sass)
   gulp.watch(PATH.root + '**/*.html', HtmlExtend)
   gulp.watch(PATH.root + '**/*.js', jsLint)
@@ -144,8 +153,18 @@ function watch() {
 }
 exports.watch = watch
 
-const Build = gulp.parallel(HtmlExtend, Sass, jsLint, ImgMin, CopyFont, watch)
+const Style = gulp.parallel(Sass, CssMin)
+
+const Build = gulp.parallel(
+  HtmlExtend,
+  Sass,
+  CssMin,
+  jsLint,
+  ImgMin,
+  CopyFont,
+  watch
+)
 
 gulp.task('default', Build)
 gulp.task('clean', Clean)
-gulp.task('sass', Sass)
+gulp.task('style', Style)
