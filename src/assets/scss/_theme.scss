@@ -1,3 +1,5 @@
+@use 'sass:map';
+
 $theme: (
   'light': (
     'colors': $color-palette,
@@ -28,15 +30,15 @@ $theme: (
 $transition-bg: all 0.1s cubic-bezier(0.185, 0.475, 0.895, 0.39);
 
 @each $theme-name, $theme-vars in $theme {
-  $shades: map-get($theme-vars, 'shades');
-  $colors: map-get($theme-vars, 'colors');
+  $shades: map.get($theme-vars, 'shades');
+  $colors: map.get($theme-vars, 'colors');
 
   $theme-mode: (
-    'bg': map-get($shades, 'shade-0'),
-    'border': map-get($shades, 'shade-2'),
-    'border-focus': map-get($shades, 'shade-3'),
-    'text': map-get($shades, 'shade-5'),
-    'heading': map-get($shades, 'shade-6'),
+    'bg': map.get($shades, 'shade-0'),
+    'border': map.get($shades, 'shade-2'),
+    'border-focus': map.get($shades, 'shade-3'),
+    'text': map.get($shades, 'shade-5'),
+    'heading': map.get($shades, 'shade-6'),
   );
 
   [data-theme='#{$theme-name}'] {

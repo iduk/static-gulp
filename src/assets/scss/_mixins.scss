@@ -4,7 +4,7 @@
 /* ------------------- Breakpoints ------------------- */
 @mixin screen-up($breakpoint) {
   @if map-has-key($breakpoints, $breakpoint) {
-    @media #{inspect(map-get($breakpoints, $breakpoint))} {
+    @media #{inspect(map.get($breakpoints, $breakpoint))} {
       @content;
     }
   } @else {
@@ -16,7 +16,7 @@
 // max-width (container-width)
 @mixin screen-down($widths) {
   @if map-has-key($max-widths, $widths) {
-    @media #{inspect(map-get($max-widths, $widths))} {
+    @media #{inspect(map.get($max-widths, $widths))} {
       @content;
     }
   } @else {
@@ -61,7 +61,13 @@
 }
 
 /* ------------------- ::after ------------------- */
-@mixin pseudo($width: 100%, $height: 100%, $display: inline-block, $pos: absolute, $content: '') {
+@mixin pseudo(
+  $width: 100%,
+  $height: 100%,
+  $display: inline-block,
+  $pos: absolute,
+  $content: ''
+) {
   content: $content;
   display: $display;
   position: $pos;
