@@ -9,7 +9,7 @@ const sass = require('gulp-sass')(require('sass'))
 const Fiber = require('fibers')
 const postcss = require('gulp-postcss')
 const autoprefixer = require('autoprefixer')
-const cssnano = require('cssnano')
+const cssnano = require('gulp-cssnano')
 const nested = require('postcss-nested')
 const cssnext = require('postcss-cssnext')
 const maps = require('gulp-sourcemaps')
@@ -72,14 +72,16 @@ function jsLint() {
 
 /*  SASS  */
 function Sass() {
-  let plugins = [nested(), cssnano(), autoprefixer({})]
+  let plugins = [nested(), autoprefixer({})]
   return gulp
     .src(PATH.ASSETS.css + '**/*.scss')
     .pipe(maps.init())
     .pipe(sass({ fiber: Fiber }).on('error', sass.logError))
     .pipe(postcss(plugins))
-    .pipe(maps.write('./map'))
     .pipe(gulp.dest(PATH_DEST.ASSETS.css))
+    .pipe(cssnano())
+    .pipe(rename({ suffix: '.min' }))
+    .pipe(maps.write('./map'))
     .pipe(browserSync.stream())
 }
 
@@ -146,3 +148,4 @@ const Build = gulp.parallel(HtmlExtend, Sass, jsLint, ImgMin, CopyFont, watch)
 
 gulp.task('default', Build)
 gulp.task('clean', Clean)
+gulp.task('sass', Sass)
