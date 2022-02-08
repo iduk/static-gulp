@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "start": "gulp",
-    "clean": "gulp clean"
+    "dev": "gulp clean && gulp"
   },
   "dependencies": {
     "@popperjs/core": "^2.11.2",
