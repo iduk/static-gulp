@@ -1,21 +1,19 @@
 'use strict'
 
 const gulp = require('gulp')
-const babel = require('gulp-babel')
 const concat = require('gulp-concat')
 const uglify = require('gulp-uglify')
-const rename = require('gulp-rename')
 const sass = require('gulp-sass')(require('sass'))
 const Fiber = require('fibers')
 const postcss = require('gulp-postcss')
-const autoprefixer = require('autoprefixer')
 const cssnano = require('gulp-cssnano')
 const nested = require('postcss-nested')
 const cssnext = require('postcss-cssnext')
+const postcssGapProperties = require('postcss-gap-properties')
+const autoprefixer = require('autoprefixer')
 const maps = require('gulp-sourcemaps')
 const del = require('del')
 const imagemin = require('gulp-imagemin')
-const copy = require('gulp-copy')
 const extender = require('gulp-html-extend')
 const browserSync = require('browser-sync').create()
 
@@ -25,7 +23,7 @@ const PATH = {
     js: 'src/assets/js/',
     css: 'src/assets/scss/',
     img: 'src/assets/images/',
-    fonts: 'src/assets/fonts/',
+    font: 'src/assets/fonts/',
   },
 }
 const PATH_DEST = {
@@ -34,7 +32,7 @@ const PATH_DEST = {
     js: 'out/assets/js/',
     css: 'out/assets/css/',
     img: 'out/assets/images/',
-    fonts: 'out/assets/fonts/',
+    font: 'out/assets/fonts/',
   },
 }
 
@@ -50,48 +48,50 @@ function HtmlExtend() {
 }
 
 /* JS - libraries */
-function jsLint() {
+function JsLibrary() {
   return gulp
-    .src([PATH.ASSETS.js + '*.js'])
+    .src([
+      // PATH.ASSETS.js + '**/*.js',
+      './node_modules/@popperjs/core/dist/umd/popper.js',
+      './node_modules/bootstrap/dist/js/bootstrap.js',
+    ])
+    .pipe(maps.init())
     .pipe(uglify())
+    .pipe(maps.write('.'))
     .pipe(gulp.dest(PATH_DEST.ASSETS.js))
     .pipe(browserSync.stream())
 }
 
 /* JS - custom */
-// gulp.task("customScripts", function () {
-//   return gulp
-//     .src([PATH.ASSETS.js + "*.js"])
-//     .pipe(maps.init())
-//     .pipe(concat("main.js"))
-//     .pipe(uglify())
-//     .pipe(rename({ suffix: ".min" }))
-//     .pipe(maps.write("./maps"))
-//     .pipe(gulp.dest(PATH_DEST.ASSETS.js))
-// })
-
-/*  SASS  */
-function Sass() {
-  let plugins = [nested(), autoprefixer({})]
+function JsBundle() {
   return gulp
-    .src(PATH.ASSETS.css + '**/*.scss')
+    .src([PATH.ASSETS.js + '*.js'])
     .pipe(maps.init())
-    .pipe(sass({ fiber: Fiber }).on('error', sass.logError))
-    .pipe(postcss(plugins))
-    .pipe(gulp.dest(PATH_DEST.ASSETS.css))
-    .pipe(maps.write('./map'))
+    .pipe(concat('main.js'))
+    .pipe(uglify())
+    .pipe(maps.write('.'))
+    .pipe(gulp.dest(PATH_DEST.ASSETS.js))
     .pipe(browserSync.stream())
 }
 
-/*  CSS Minify  */
-function CssMin() {
+/*  SASS  */
+function Sass() {
+  let plugins = [
+    nested(),
+    cssnext(),
+    postcssGapProperties(),
+    autoprefixer({
+      grid: true,
+    }),
+    // cssnano(),
+  ]
   return gulp
-    .src(PATH_DEST.ASSETS.css + '*.css')
+    .src(PATH.ASSETS.css + '**/*.{scss,css}')
     .pipe(maps.init())
-    .pipe(cssnano())
-    .pipe(rename({ suffix: '.min' }))
+    .pipe(sass({ fiber: Fiber }).on('error', sass.logError))
+    .pipe(postcss(plugins))
+    .pipe(maps.write('.'))
     .pipe(gulp.dest(PATH_DEST.ASSETS.css))
-    .pipe(maps.write('./map'))
     .pipe(browserSync.stream())
 }
 
@@ -100,37 +100,20 @@ function CssMin() {
 */
 function ImgMin() {
   return gulp
-    .src([PATH.ASSETS.img + '*'])
-    .pipe(
-      imagemin([
-        imagemin.gifsicle({
-          interlaced: true,
-        }),
-        imagemin.optipng({
-          optimizationLevel: 5,
-        }),
-        imagemin.svgo({
-          plugins: [
-            {
-              removeViewBox: true,
-            },
-            {
-              cleanupIDs: false,
-            },
-          ],
-        }),
-      ])
-    )
+    .src([PATH.ASSETS.img + '**/*'])
+    .pipe(imagemin())
     .pipe(gulp.dest(PATH_DEST.ASSETS.img))
 }
 
 /* Copy Fonts */
 function CopyFont() {
-  return gulp.src(PATH.ASSETS.fonts).pipe(gulp.dest(PATH_DEST.ASSETS.fonts))
+  return gulp
+    .src(PATH.ASSETS.font + '**/*')
+    .pipe(gulp.dest(PATH_DEST.ASSETS.font))
 }
 
-/* Clean */
-function Clean(done) {
+/* delete */
+function Delete(done) {
   del([PATH_DEST.root]), done()
 }
 
@@ -148,23 +131,25 @@ function watch() {
   })
   gulp.watch(PATH.ASSETS.css + '**/*.scss', Sass)
   gulp.watch(PATH.root + '**/*.html', HtmlExtend)
-  gulp.watch(PATH.root + '**/*.js', jsLint)
+  gulp.watch(PATH.root + '**/*.js', JsLibrary)
+  gulp.watch(PATH.root + '*.js', JsBundle)
   gulp.watch(PATH.root + '**/*.html', reload)
 }
+
 exports.watch = watch
 
-const Style = gulp.parallel(Sass, CssMin)
-
-const Build = gulp.parallel(
+const BUILD = gulp.parallel(
   HtmlExtend,
   Sass,
-  CssMin,
-  jsLint,
+  JsLibrary,
+  JsBundle,
   ImgMin,
   CopyFont,
   watch
 )
 
-gulp.task('default', Build)
-gulp.task('clean', Clean)
-gulp.task('style', Style)
+const RESOURCES = gulp.parallel(Sass, JsLibrary, CopyFont, ImgMin)
+
+gulp.task('default', BUILD)
+gulp.task('dev', RESOURCES)
+gulp.task('clean', Delete)

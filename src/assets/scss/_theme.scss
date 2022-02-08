@@ -65,3 +65,9 @@ body {
   color: var(--theme-text);
   transition: $transition-bg;
 }
+
+.flex-test {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
